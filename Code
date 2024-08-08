@@ -1,0 +1,266 @@
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+
+public class habitacion
+{
+    //atributos
+    public int numero { get; set; } // número de habitacion
+    public double precioPorNoche { get; set; } // precio por noche
+    public bool disponible { get; set; } // indicador de disponibilidad de la habitacion
+    public string clienteAsignado { get; set; } // cliente que ocupa la habitacion
+
+    public habitacion(int numero, double precioPorNoche)
+    {
+        numero = numero;
+        precioPorNoche = precioPorNoche;
+        disponible = true;
+        clienteAsignado = null;
+    }
+    //métodos (lo que dice su nombre)
+    public virtual void mostrarInformación()
+    {
+        Console.WriteLine($"Número: {numero}, precio {precioPorNoche}, disponible {disponible}, cliente asignado{clienteAsignado}");
+    }
+    public void cambiarDisponibilidad(bool disponible)
+    {
+        disponible &= disponible;
+    }
+    public void asignarCliente(string nombreCliente)
+    {
+        clienteAsignado = nombreCliente;
+        cambiarDisponibilidad(false);
+    }
+    public void liberarHabitacion()
+    {
+        clienteAsignado = null;
+        cambiarDisponibilidad(true);
+    }
+}
+public class habitacionSimple : habitacion
+{
+    public int numeroDeCamas { get; set; }
+
+    public habitacionSimple(int numero, double precioPorNoche, int numeroDeCamas) : base(numero, precioPorNoche)
+    {
+        numeroDeCamas = numeroDeCamas;
+    }
+    public override void mostrarInformación()
+    {
+        base.mostrarInformación();
+        Console.WriteLine($"Número de camas: {numeroDeCamas}");
+    }
+}
+
+public class habitacionDoble : habitacion
+{
+    public bool vistaAlMar { get; set; }
+
+    public habitacionDoble(int numero, double precioPorNoche, bool vistaAlMar) : base(numero, precioPorNoche)
+    {
+        vistaAlMar = vistaAlMar;
+    }
+    public override void mostrarInformación()
+    {
+        base.mostrarInformación();
+        Console.WriteLine($"Vista al mar {vistaAlMar}");
+    }
+}
+public class suite : habitacion
+{ 
+
+    public int numeroDeHabitaciones { get; set; }
+    public bool tieneJacuzzi { get; set; }
+    public suite(int numero, double precioPorNoche, int numeroDeHabitaciones, bool tieneJacuzzi) : base(numero, precioPorNoche)
+    {
+        tieneJacuzzi = tieneJacuzzi;
+    }
+    public override void mostrarInformación()
+    {
+        base.mostrarInformación();
+        Console.WriteLine($"tiene Jacuzzi {tieneJacuzzi}");
+    }
+}
+
+public class habitacionDeluxe : habitacion
+{
+    public string serviciosExtras { get; set; }
+    public habitacionDeluxe(int numero, double precioPorNoche, string serviciosExtras) : base(numero, precioPorNoche)
+    {
+    serviciosExtras = serviciosExtras;
+    }
+    public override void mostrarInformación()
+    {
+        base.mostrarInformación();
+        Console.WriteLine($"Servicios Extras {serviciosExtras}");
+    }
+}
+
+public class hotel 
+{
+    private List<habitacion> habitaciones = new List<habitacion>();
+    public void agregarHabitacion(habitacion habitacion)
+    {
+        habitaciones.Add(habitacion);
+    }
+    public void eliminarHabitacion(int numero)
+    {
+        habitaciones.RemoveAll(h => h.numero == numero);
+    }
+    public void mostrarHabitaciones()
+    {
+        foreach (var habitacion in habitaciones)
+        {
+            habitacion.mostrarInformación();
+            Console.WriteLine();
+        }
+    }
+
+    public void asignarHabitacion(int numero, string nombreCliente)
+    {
+        var habitacion = habitaciones.Find(h => h.numero == numero);
+        if (habitacion != null && habitacion.disponible)
+        {
+            habitacion.asignarCliente(nombreCliente);
+            Console.WriteLine($"Habitación asignada con exito a {nombreCliente}");
+        }
+        else
+        {
+            Console.WriteLine("Habitacion no disponible o no encontrada.");
+        }
+    }
+
+    public void liberarHabitacion(int numero)
+    {
+        var habitacion = habitaciones.Find(h => h.numero == numero);
+        if (habitacion != null && !habitacion.disponible)
+        {
+            habitacion.liberarHabitacion();
+            Console.WriteLine("Habitación liberada con éxito.");
+        }
+        else
+        {
+            Console.WriteLine("Habitación no encontrada o ya está disponible.");
+        }
+    }
+}
+//programa principal 
+class Program
+{
+    static void Main(string[] args)
+    {
+        hotel hotel = new hotel();
+        bool salir = false;
+
+        while (!salir)
+        {
+            try
+            {
+                Console.WriteLine("\t..:|MENÚ|:..");
+                Console.WriteLine("|1| Agregar Habitación.");
+                Console.WriteLine("|2| Eliminar Habitación.");
+                Console.WriteLine("|3| Mostrar Habitaciones.");
+                Console.WriteLine("|4| Asignar Habitación a Cliente.");
+                Console.WriteLine("|5| Liberar Habitación.");
+                Console.WriteLine("|6| Salir.");
+                Console.Write("Seleccione una opción: ");
+                int opcion = int.Parse(Console.ReadLine());
+
+                switch (opcion)
+                {
+                    case 1:
+                        Console.Clear();
+                        Console.WriteLine("Seleccione el tipo de habitación:");
+                        Console.WriteLine("|1| Habitación Simple.");
+                        Console.WriteLine("|2| Habitación Doble.");
+                        Console.WriteLine("|3| Suite.");
+                        Console.WriteLine("|4| Habitación Deluxe.");
+                        int tipo = int.Parse(Console.ReadLine());
+
+                        Console.Write("Número: ");
+                        int numero = int.Parse(Console.ReadLine());
+                        Console.Write("Precio por Noche: ");    
+                        double precio = double.Parse(Console.ReadLine());
+                        Console.ReadKey();
+
+                        switch (tipo)
+                        {
+                            case 1:
+                                Console.Clear();
+                                Console.Write("Número de Camas: ");
+                                int numeroDeCamas = int.Parse(Console.ReadLine());
+                                hotel.agregarHabitacion(new habitacionSimple(numero, precio, numeroDeCamas));
+                                Console.ReadKey();
+                                break;
+                            case 2:
+                                Console.Write("Vista al Mar (t/f): ");
+                                bool vistaAlMar = bool.Parse(Console.ReadLine());
+                                hotel.agregarHabitacion(new habitacionDoble(numero, precio, vistaAlMar));
+                                break;
+                            case 3:
+                                Console.Clear();
+                                Console.Write("Número de Habitaciones: ");
+                                int numeroDeHabitaciones = int.Parse(Console.ReadLine());
+                                Console.Write("Tiene Jacuzzi (true/false): ");
+                                bool tieneJacuzzi = bool.Parse(Console.ReadLine());
+                                hotel.agregarHabitacion(new suite(numero, precio, numeroDeHabitaciones, tieneJacuzzi));
+                                Console.ReadKey();
+                                break;
+                            case 4:
+                                Console.Clear();
+                                Console.Write("Servicios Extras: ");
+                                string serviciosExtras = Console.ReadLine();
+                                hotel.agregarHabitacion(new habitacionDeluxe(numero, precio, serviciosExtras));
+                                Console.ReadKey();
+                                break;
+                        }
+                        break;
+                    case 2:
+                        Console.Clear();
+                        Console.Write("Número de la habitación a eliminar: ");
+                        int numeroEliminar = int.Parse(Console.ReadLine());
+                        hotel.eliminarHabitacion(numeroEliminar);
+                        Console.Clear();
+                        break;
+                    case 3:
+                        Console.Clear();
+                        hotel.mostrarHabitaciones();
+                        Console.ReadKey();
+                        break;
+                    case 4:
+                        Console.Clear();
+                        Console.Write("Número de la habitación: ");
+                        int numeroAsignar = int.Parse(Console.ReadLine());
+                        Console.Write("Nombre del cliente: ");
+                        string nombreCliente = Console.ReadLine();
+                        hotel.asignarHabitacion(numeroAsignar, nombreCliente);
+                        Console.ReadKey();
+                        break;
+                    case 5:
+                        Console.Clear();
+                        Console.Write("Número de la habitación: ");
+                        int numeroLiberar = int.Parse(Console.ReadLine());
+                        hotel.liberarHabitacion(numeroLiberar);
+                        Console.ReadKey();
+                        break;
+                    case 6:
+                        salir = true;
+                        break;
+                    default:
+                        Console.Clear();
+                        Console.WriteLine("Opción no válida.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        catch (FormatException ex)
+        {
+            Console.WriteLine(ex);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+    }
+    }
+}
